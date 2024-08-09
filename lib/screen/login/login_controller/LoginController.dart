@@ -1,3 +1,4 @@
+import 'package:gbfinds/screen/dashboard/dashboarb_scren.dart';
 import 'package:get/get.dart';
 
 class LoginController extends GetxController {
@@ -23,6 +24,8 @@ class LoginController extends GetxController {
     if (isEmailValid.value && isPasswordValid.value) {
       // Handle login logic here
       Get.snackbar('Login', 'Logging in with ${email.value}');
+
+      Get.to(() =>DashboarbScreen());
     } else {
       Get.snackbar('Login Error', 'Please enter valid email and password');
     }
