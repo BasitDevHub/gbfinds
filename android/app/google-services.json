@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "380184117975",
+    "project_id": "gbfind-1b948",
+    "storage_bucket": "gbfind-1b948.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:380184117975:android:4d535a7a7d8c3063f7a692",
+        "android_client_info": {
+          "package_name": "com.example.gbfinds"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAo3e9lDlQk4VdHKTVzf31XMTOz18xFA5k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

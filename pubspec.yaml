@@ -17,6 +17,7 @@ dependencies:
 
   cupertino_icons: ^1.0.6
   get: ^4.6.5 # Check for the latest version
+  firebase_core: ^3.3.0
 
 
 dev_dependencies:
