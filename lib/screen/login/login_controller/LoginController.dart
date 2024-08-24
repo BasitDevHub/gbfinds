@@ -1,4 +1,4 @@
-import 'package:gbfinds/screen/dashboard/dashboarb_scren.dart';
+import 'package:gbfinds/screen/dashboard/dashboarb_screen.dart';
 import 'package:get/get.dart';
 
 class LoginController extends GetxController {

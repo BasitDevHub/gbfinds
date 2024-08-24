@@ -120,10 +120,8 @@ class LoginScreen extends StatelessWidget {
               ],
             ),
           ),
-          Positioned(child: TextButton(onPressed: (){Get.to(()=>SignupScreen());},child: const Text('Create an Account' ,style: TextStyle(color: Colors.white ,fontSize: 18 ),),),
-
-          bottom: 60,
-          left: 10,right: 10,)
+          Positioned(bottom: 60,
+          left: 10,right: 10,child: TextButton(onPressed: (){Get.to(()=>SignupScreen());},child: const Text('Create an Account' ,style: TextStyle(color: Colors.white ,fontSize: 18 ),),),)
         ],
       ),
     );

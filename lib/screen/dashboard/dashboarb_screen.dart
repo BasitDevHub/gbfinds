@@ -1,10 +1,9 @@
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
+
 
 import '../cart_screen/cart_screen.dart';
-import '../cart_screen/controller/CartController.dart';
 
 class DashboarbScreen extends StatefulWidget {
   const DashboarbScreen({super.key});
@@ -183,4 +182,3 @@ class _DashboarbScreenState extends State<DashboarbScreen> {
     );
   }
 }
-
