@@ -1,3 +1,4 @@
+import 'package:gbfinds/screen/Vendor/VendorScreen.dart';
 import 'package:gbfinds/screen/dashboard/dashboarb_screen.dart';
 import 'package:get/get.dart';
 
@@ -25,7 +26,7 @@ class LoginController extends GetxController {
       // Handle login logic here
       Get.snackbar('Login', 'Logging in with ${email.value}');
 
-      Get.to(() =>DashboarbScreen());
+      Get.to(() =>VendorScreen());
     } else {
       Get.snackbar('Login Error', 'Please enter valid email and password');
     }

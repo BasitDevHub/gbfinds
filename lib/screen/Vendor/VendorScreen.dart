@@ -9,14 +9,30 @@ class VendorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Reference to the vendors node in Firebase Realtime Database
-    final DatabaseReference vendorRef = FirebaseDatabase.instance.ref().child('UserDetail');
+    final DatabaseReference vendorRef =
+        FirebaseDatabase.instance.ref().child('UserDetail');
 
     return Scaffold(
 
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          ),
+        ),
+        backgroundColor: Colors.green,
+        title: const Text('Vendors'),
+        centerTitle: true,
+
+      ),
+
       body: Column(
         children: [
-
-          SizedBox(height: 64,),
+          const SizedBox(
+            height: 12,
+          ),
           // Slider widget
           Container(
             padding: const EdgeInsets.all(8.0),
@@ -24,19 +40,57 @@ class VendorScreen extends StatelessWidget {
               height: 130,
               child: PageView(
                 children: [
-                  Container(color: Colors.red, child: const Center(child: Text('Slide 1', style: TextStyle(color: Colors.white, fontSize: 24)))),
-                  Container(color: Colors.green, child: const Center(child: Text('Slide 2', style: TextStyle(color: Colors.white, fontSize: 24)))),
-                  Container(color: Colors.blue, child: const Center(child: Text('Slide 3', style: TextStyle(color: Colors.white, fontSize: 24)))),
+                  Container(
+
+
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.red,
+
+                    ),
+                      child: const Center(
+                          child: Text('Slide 1',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 24)))),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.red,
+
+                    ),
+                      child: const Center(
+                          child: Text('Slide 1',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 24)))),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.red,
+
+                    ),
+                      child: const Center(
+                          child: Text('Slide 1',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 24)))),
+
                 ],
               ),
             ),
           ),
-          
-          
-          
-          Text('Order from the best and enjoy top-quality service! ' ,style: TextStyle(fontWeight: FontWeight.w700 ,fontSize: 18 ,),textAlign: TextAlign.center,),
 
-         Divider(height: 2,color: Colors.black,),
+          const Text(
+            'Order from the best and enjoy top-quality service! ',
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+            ),
+            textAlign: TextAlign.center,
+          ),
+
+          const Divider(
+            height: 2,
+            color: Colors.black,
+          ),
           // ListView of vendors
           Expanded(
             child: StreamBuilder(
@@ -48,12 +102,15 @@ class VendorScreen extends StatelessWidget {
                 if (snapshot.hasError) {
                   return const Center(child: Text('Error loading vendors'));
                 }
-                if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+                if (!snapshot.hasData ||
+                    snapshot.data!.snapshot.value == null) {
                   return const Center(child: Text('No vendors found'));
                 }
 
-                Map<dynamic, dynamic> vendorsMap = snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
-                List<Map<String, dynamic>> vendors = vendorsMap.values.map((vendor) {
+                Map<dynamic, dynamic> vendorsMap =
+                    snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                List<Map<String, dynamic>> vendors =
+                    vendorsMap.values.map((vendor) {
                   return {
                     'name': vendor['ownerName'] ?? 'No Name',
                     'location': vendor['shopAddress'] ?? 'No Address',
@@ -71,7 +128,7 @@ class VendorScreen extends StatelessWidget {
                       location: vendor['location']!,
                       shopName: vendor['shopName']!,
                       onPress: () {
-                        Get.to(() => const DashboarbScreen());
+                        Get.to(() => DashboardScreen(shopName: vendor['shopName'],));
                       },
                     );
                   },
@@ -84,9 +141,6 @@ class VendorScreen extends StatelessWidget {
     );
   }
 }
-
-
-
 
 class VendorCard extends StatelessWidget {
   final String name;
@@ -107,8 +161,6 @@ class VendorCard extends StatelessWidget {
       elevation: 5,
       margin: const EdgeInsets.only(bottom: 8.0),
       child: Column(
-
-
         children: [
           ListTile(
             contentPadding: const EdgeInsets.all(8.0),
@@ -117,9 +169,9 @@ class VendorCard extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(name),
+                Text(name ,textAlign: TextAlign.left,),
                 Text(location),
               ],
             ),
@@ -135,11 +187,9 @@ class VendorCard extends StatelessWidget {
                   onPressed: onPress,
                   child: const Text('Browse to Order'),
                 ),
-
               ),
-
-              Padding(
-                padding: const EdgeInsets.all(8.0),
+              const Padding(
+                padding: EdgeInsets.all(8.0),
                 child: Icon(
                   Icons.location_disabled_outlined, // Replace with your icon
                   size: 30,

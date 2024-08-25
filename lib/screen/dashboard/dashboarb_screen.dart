@@ -1,30 +1,26 @@
-
-import 'package:flutter/cupertino.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
-
 import '../cart_screen/cart_screen.dart';
+import '../models/Item.dart';
+import '../models/Product.dart';
+import '../order_screen/PurchaseScreen.dart';
 
-class DashboarbScreen extends StatefulWidget {
-  const DashboarbScreen({super.key});
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key, required this.shopName});
+
+  final String shopName;
 
   @override
-  _DashboarbScreenState createState() => _DashboarbScreenState();
+  _DashboardScreenState createState() => _DashboardScreenState();
 }
 
-class _DashboarbScreenState extends State<DashboarbScreen> {
+class _DashboardScreenState extends State<DashboardScreen> {
+  final DatabaseReference databaseRef =
+      FirebaseDatabase.instance.ref('allItems');
 
   // Main categories
   final List<String> mainCategories = ['All', 'Items We Eat', 'Items We Wear'];
-
-  // List of product data with categories
-  final List<Map<String, String>> products = [
-    {'name': 'Apple', 'image': 'assets/image.jpg', 'category': 'Items We Eat'},
-    {'name': 'T-Shirt', 'image': 'assets/image.jpg', 'category': 'Items We Wear'},
-    {'name': 'Cap', 'image': 'assets/image.jpg', 'category': 'Items We Wear'},
-    {'name': 'Nature Poster', 'image': 'assets/image.jpg', 'category': 'Items We Eat'},
-    {'name': 'Snacks', 'image': 'assets/image.jpg', 'category': 'Items We Eat'},
-  ];
 
   // Selected main category
   String selectedCategory = 'All';
@@ -32,13 +28,163 @@ class _DashboarbScreenState extends State<DashboarbScreen> {
   // Cart items
   final List<String> cartItems = [];
 
+  List<Product> allItems = [];
+  List<Product> filteredItems = [];
+
+  bool isLoading = true; // Track loading state
+
+  void fetchAndHandleItems() async {
+    final databaseReference =
+        FirebaseDatabase.instance.ref("allItems").child(widget.shopName);
+
+    DataSnapshot dataSnapshot = await databaseReference.get();
+
+    if (dataSnapshot.exists) {
+      final data = dataSnapshot.value as Map<dynamic, dynamic>?;
+      if (data != null) {
+        final Map<String, dynamic> typedData = data.map(
+          (key, value) =>
+              MapEntry(key.toString(), value as Map<dynamic, dynamic>),
+        );
+
+        List<Product> items = [];
+
+        typedData.forEach((key, value) {
+          if (value is Map<dynamic, dynamic>) {
+            final itemMap = value.cast<String, dynamic>();
+
+            try {
+              final item = Product.fromMap(itemMap); // Change to Product
+              items.add(item);
+            } catch (e) {
+              print('Error creating Product: $e'); // Adjusted error message
+            }
+          }
+        });
+
+        setState(() {
+          allItems = items;
+          filteredItems = items; // Set initial filtered items
+          isLoading = false; // Data fetching complete
+        });
+      }
+    } else {
+      print('No data available');
+      setState(() {
+        isLoading = false; // Data fetching complete
+      });
+    }
+  }
+
+  void fetchItemsWeEat() async {
+    final databaseReference = FirebaseDatabase.instance
+        .ref("vendors")
+        .child(widget.shopName)
+        .child("Food");
+
+    DataSnapshot dataSnapshot = await databaseReference.get();
+
+    if (dataSnapshot.exists) {
+      final data = dataSnapshot.value as Map<dynamic, dynamic>?;
+      if (data != null) {
+        final Map<String, dynamic> typedData = data.map(
+          (key, value) =>
+              MapEntry(key.toString(), value as Map<dynamic, dynamic>),
+        );
+
+        List<Product> itemsWeEatList = [];
+        typedData.forEach((key, value) {
+          if (value is Map<dynamic, dynamic>) {
+            final itemMap = value.cast<String, dynamic>();
+            try {
+              final item = Product.fromMap(itemMap);
+              itemsWeEatList.add(item);
+            } catch (e) {
+              print('Error creating Product: $e');
+            }
+          }
+        });
+
+        setState(() {
+          allItems = itemsWeEatList;
+          filteredItems =
+              itemsWeEatList; // Set to show "Items We Eat" initially
+          isLoading = false; // Data fetching complete
+        });
+      }
+    } else {
+      print('No data available');
+      setState(() {
+        isLoading = false; // Data fetching complete
+      });
+    }
+  }
+
+  void fetchItemsWeWear() async {
+    final databaseReference = FirebaseDatabase.instance
+        .ref("vendors")
+        .child(widget.shopName)
+        .child("Clothing");
+
+    DataSnapshot dataSnapshot = await databaseReference.get();
+
+    if (dataSnapshot.exists) {
+      final data = dataSnapshot.value as Map<dynamic, dynamic>?;
+      if (data != null) {
+        final Map<String, dynamic> typedData = data.map(
+          (key, value) =>
+              MapEntry(key.toString(), value as Map<dynamic, dynamic>),
+        );
+
+        List<Product> itemsWeWearList = [];
+        typedData.forEach((key, value) {
+          if (value is Map<dynamic, dynamic>) {
+            final itemMap = value.cast<String, dynamic>();
+            try {
+              final item = Product.fromMap(itemMap);
+              itemsWeWearList.add(item);
+            } catch (e) {
+              print('Error creating Product: $e');
+            }
+          }
+        });
+
+        setState(() {
+          allItems = itemsWeWearList;
+          filteredItems =
+              itemsWeWearList; // Set to show "Items We Wear" initially
+          isLoading = false; // Data fetching complete
+        });
+      }
+    } else {
+      print('No data available');
+      setState(() {
+        isLoading = false; // Data fetching complete
+      });
+    }
+  }
+
+  void filterItems() {
+    setState(() {
+      isLoading = true; // Set loading state to true when filtering
+      if (selectedCategory == 'All') {
+        fetchAndHandleItems(); // Fetch all items if "All" is selected
+      } else if (selectedCategory == 'Items We Eat') {
+        fetchItemsWeEat();
+      } else if (selectedCategory == 'Items We Wear') {
+        fetchItemsWeWear();
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAndHandleItems();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Filter products based on selected category
-    final filteredProducts = selectedCategory == 'All'
-        ? products
-        : products.where((product) => product['category'] == selectedCategory).toList();
-
     return Scaffold(
       appBar: AppBar(
         shape: const RoundedRectangleBorder(
@@ -53,10 +199,12 @@ class _DashboarbScreenState extends State<DashboarbScreen> {
           IconButton(
             icon: const Icon(Icons.shopping_cart),
             onPressed: () {
-              // Navigate to cart screen or show cart dialog
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CartScreen(cartItems: cartItems,)),
+                MaterialPageRoute(
+                    builder: (context) => CartScreen(
+                          cartItems: cartItems,
+                        )),
               );
             },
           ),
@@ -76,6 +224,7 @@ class _DashboarbScreenState extends State<DashboarbScreen> {
                   onSelected: (selected) {
                     setState(() {
                       selectedCategory = category;
+                      filterItems();
                     });
                   },
                   selectedColor: Colors.green,
@@ -86,25 +235,30 @@ class _DashboarbScreenState extends State<DashboarbScreen> {
             ),
           ),
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16.0),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2, // Number of columns
-                crossAxisSpacing: 16.0, // Horizontal spacing
-                mainAxisSpacing: 16.0, // Vertical spacing
-                childAspectRatio: 0.75, // Aspect ratio of the card
-              ),
-              itemCount: filteredProducts.length, // Number of items
-              itemBuilder: (context, index) {
-                final product = filteredProducts[index];
-                return _buildProductCard(
-                  context,
-                  productName: product['name']!,
-                  productPrice: '\$${(index + 1) * 10}.00',
-                  productImage: product['image']!,
-                );
-              },
-            ),
+            child: isLoading
+                ? Center(
+                    child:
+                        CircularProgressIndicator()) // Show loading indicator while fetching
+                : filteredItems.isEmpty
+                    ? Center(child: Text('No items available'))
+                    : GridView.builder(
+                        padding: const EdgeInsets.all(8.0),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 8.0,
+                          mainAxisSpacing: 8.0,
+                        ),
+                        itemCount: filteredItems.length,
+                        itemBuilder: (context, index) {
+                          final item = filteredItems[index];
+                          return _buildProductCard(
+                            context,
+                            productName: item.name,
+                            productPrice: item.price,
+                            productImage: item.imageUrl,
+                          );
+                        },
+                      ),
           ),
         ],
       ),
@@ -126,9 +280,9 @@ class _DashboarbScreenState extends State<DashboarbScreen> {
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-            child: Image.asset(
+            child: Image.network(
               productImage,
-              height: 100,
+              height: 70,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
@@ -144,9 +298,9 @@ class _DashboarbScreenState extends State<DashboarbScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             child: Text(
-              productPrice,
+              'Rs:' + productPrice,
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.green,
@@ -154,31 +308,54 @@ class _DashboarbScreenState extends State<DashboarbScreen> {
             ),
           ),
           Spacer(),
-          Container(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Add to Cart Button
+              TextButton(
 
-            alignment: Alignment.center,
-            height: 25,
-            child: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  cartItems.add(productName);
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('$productName added to cart'),
-                  ),
-                );
-              },
-              child: const Text('Add to Cart'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white, backgroundColor: Colors.green,
+                onPressed: () {
+                  setState(() {
+                    cartItems.add(productName);
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('$productName added to cart'),
+                    ),
+                  );
+                },
+                child: const Text('Add to Cart'),
+                style: ElevatedButton.styleFrom(
+
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.green,
+                ),
               ),
-            ),
+              // Buy Now Button
+              ElevatedButton(
+                onPressed: () {
+                  // Implement your buy now functionality here
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PurchaseScreen(productName: productName,   price: productPrice,),
+                    ),
+                  );
+                },
+                child: const Text('Buy Now'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.blue,
+                ),
+              ),
+            ],
           ),
-
-          SizedBox(height: 10,)
+          SizedBox(
+            height: 10,
+          )
         ],
       ),
     );
   }
+
 }
