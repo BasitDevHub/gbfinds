@@ -2,6 +2,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 import '../cart_screen/cart_screen.dart';
+import '../models/CartItem.dart';
 import '../models/Item.dart';
 import '../models/Product.dart';
 import '../order_screen/PurchaseScreen.dart';
@@ -267,22 +268,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildProductCard(BuildContext context,
       {required String productName,
-        required String productPrice,
-        required String productImage}) {
+      required String productPrice,
+      required String productImage}) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(4),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
             child: Image.network(
               productImage,
-              height: 70,
+              height: 60,
               width: double.infinity,
               fit: BoxFit.cover,
             ),
@@ -298,7 +298,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
             child: Text(
               'Rs:' + productPrice,
               style: TextStyle(
@@ -307,55 +307,62 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
           ),
-          Spacer(),
+          const Spacer(),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              // Add to Cart Button
-              TextButton(
+              IconButton(
+                onPressed: () async {
 
-                onPressed: () {
-                  setState(() {
-                    cartItems.add(productName);
-                  });
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('$productName added to cart'),
-                    ),
+                  CartItem cartItem = CartItem(
+                    vendorName: widget.shopName,
+                    itemName: productName,
+                    itemPrice: productPrice,
                   );
-                },
-                child: const Text('Add to Cart'),
-                style: ElevatedButton.styleFrom(
 
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.green,
-                ),
-              ),
-              // Buy Now Button
-              ElevatedButton(
-                onPressed: () {
-                  // Implement your buy now functionality here
+                  await CartPreferences.addItemToCart(cartItem);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('$productName added to cart'),
+                      ),);
+                },
+
+                  // onPressed: () {
+                  //   setState(() {
+                  //     cartItems.add(productName);
+                  //   });
+                  //   ScaffoldMessenger.of(context).showSnackBar(
+                  //     SnackBar(
+                  //       content: Text('$productName added to cart'),
+                  //     ),
+                  //   );
+                  // },
+                  icon: Icon(Icons.add_shopping_cart)),
+
+              SizedBox(width: 32,)
+,
+              GestureDetector(
+                onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PurchaseScreen(productName: productName,   price: productPrice,),
+                      builder: (context) => PurchaseScreen(
+                        productName: productName,
+                        price: productPrice,
+                      ),
                     ),
                   );
                 },
-                child: const Text('Buy Now'),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.blue,
-                ),
-              ),
+                child: Text('Buy Now'),
+              )
+              // Add to Cart Button
+              // Buy Now Button
             ],
           ),
-          SizedBox(
-            height: 10,
-          )
+          const SizedBox(height: 5),
         ],
       ),
     );
   }
-
 }
