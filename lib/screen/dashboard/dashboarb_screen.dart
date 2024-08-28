@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart_screen/cart_screen.dart';
 import '../models/CartItem.dart';
@@ -121,6 +124,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  // Future<void> addToCart(String productName) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   List<String>? cartItems = prefs.getStringList('cartItems') ?? [];
+  //
+  //   // Add new item to the cart
+  //   cartItems.add(productName);
+  //
+  //   // Save the updated list
+  //   await prefs.setStringList('cartItems', cartItems);
+  //
+  //   // Show confirmation Snackbar
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text('$productName added to cart'),
+  //     ),
+  //   );
+  // }
+
   void fetchItemsWeWear() async {
     final databaseReference = FirebaseDatabase.instance
         .ref("vendors")
@@ -188,24 +209,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(onPressed: (){
+          Navigator.pop(context);
+
+        },icon: Icon(Icons.arrow_back ,color: Colors.white,size: 24,),),
+
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(16),
             bottomRight: Radius.circular(16),
           ),
         ),
-        backgroundColor: Colors.green,
-        title: const Text('Product Dashboard'),
+        backgroundColor: Colors.blue,
+        title: const Text('Vendor Items' ,style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold),),
+
+       centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.shopping_cart),
+            icon: const Icon(Icons.shopping_cart ,color: Colors.white,size: 24,),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => CartScreen(
-                          cartItems: cartItems,
-                        )),
+                MaterialPageRoute(builder: (context) => CartScreen()),
               );
             },
           ),
@@ -220,7 +246,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: mainCategories.map((category) {
                 return FilterChip(
-                  label: Text(category),
+                  label: Text(category ,style: TextStyle( color: Colors.white),),
                   selected: selectedCategory == category,
                   onSelected: (selected) {
                     setState(() {
@@ -228,8 +254,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       filterItems();
                     });
                   },
-                  selectedColor: Colors.green,
-                  backgroundColor: Colors.grey.shade300,
+                  selectedColor: Colors.blue,
+                  backgroundColor: Colors.blueGrey,
                   checkmarkColor: Colors.white,
                 );
               }).toList(),
@@ -265,6 +291,83 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
+
+
+
+
+  // Future<void> addToCart({
+  //   required String productName,
+  //   required String productPrice,
+  //   required String vendorName,
+  // }) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //
+  //   // Retrieve existing cart items
+  //   List<String>? cartItemsStrings = prefs.getStringList('cartItems');
+  //   List<CartItem> cartItems = cartItemsStrings != null
+  //       ? cartItemsStrings
+  //       .map((itemString) => CartItem.fromMap(jsonDecode(itemString)))
+  //       .toList()
+  //       : [];
+  //
+  //   // Add new item to the cart
+  //   CartItem newItem = CartItem(
+  //     vendorName: vendorName, itemName: productName, itemPrice: productPrice,
+  //   );
+  //   cartItems.add(newItem);
+  //
+  //   // Save the updated list
+  //   List<String> updatedCartItemsStrings = cartItems
+  //       .map((item) => jsonEncode(item.toMap()))
+  //       .toList();
+  //   await prefs.setStringList('cartItems', updatedCartItemsStrings);
+  //
+  //   // Show confirmation Snackbar
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text('$productName added to cart'),
+  //     ),
+  //   );
+  // }
+
+  Future<void> addToCart({
+    required String productName,
+    required String productPrice,
+    required String vendorName,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Retrieve existing cart items
+    List<String>? cartItemsStrings = prefs.getStringList('cartItems');
+    List<CartItem> cartItems = cartItemsStrings != null
+        ? cartItemsStrings
+        .map((itemString) => CartItem.fromMap(jsonDecode(itemString)))
+        .toList()
+        : [];
+
+    // Add new item to the cart
+    CartItem newItem = CartItem(
+      name: productName,
+      price: productPrice,
+      vendor: widget.shopName,
+    );
+    cartItems.add(newItem);
+
+    // Save the updated list
+    List<String> updatedCartItemsStrings = cartItems
+        .map((item) => jsonEncode(item.toMap()))
+        .toList();
+    await prefs.setStringList('cartItems', updatedCartItemsStrings);
+
+    // Show confirmation Snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$productName added to cart'),
+      ),
+    );
+  }
+
 
   Widget _buildProductCard(BuildContext context,
       {required String productName,
@@ -312,36 +415,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               IconButton(
-                onPressed: () async {
+                  onPressed: () async {
 
-                  CartItem cartItem = CartItem(
-                    vendorName: widget.shopName,
-                    itemName: productName,
-                    itemPrice: productPrice,
-                  );
+// Example of adding a product to the cart
+                    addToCart(
+                      productName: productName,
+                      productPrice: productPrice,
+                      vendorName: widget.shopName,
+                    );
 
-                  await CartPreferences.addItemToCart(cartItem);
-
-                  ScaffoldMessenger.of(context).showSnackBar(
+                    ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('$productName added to cart'),
-                      ),);
-                },
-
-                  // onPressed: () {
-                  //   setState(() {
-                  //     cartItems.add(productName);
-                  //   });
-                  //   ScaffoldMessenger.of(context).showSnackBar(
-                  //     SnackBar(
-                  //       content: Text('$productName added to cart'),
-                  //     ),
-                  //   );
-                  // },
+                      ),
+                    );
+                  },
                   icon: Icon(Icons.add_shopping_cart)),
 
-              SizedBox(width: 32,)
-,
+              SizedBox(
+                width: 32,
+              ),
               GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -354,7 +447,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   );
                 },
-                child: Text('Buy Now'),
+                child: Text('Order Now'),
               )
               // Add to Cart Button
               // Buy Now Button
