@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart_screen/cart_screen.dart';
 import '../models/CartItem.dart';
-import '../models/Item.dart';
 import '../models/Product.dart';
 import '../order_screen/PurchaseScreen.dart';
 
@@ -124,24 +122,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // Future<void> addToCart(String productName) async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   List<String>? cartItems = prefs.getStringList('cartItems') ?? [];
-  //
-  //   // Add new item to the cart
-  //   cartItems.add(productName);
-  //
-  //   // Save the updated list
-  //   await prefs.setStringList('cartItems', cartItems);
-  //
-  //   // Show confirmation Snackbar
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //       content: Text('$productName added to cart'),
-  //     ),
-  //   );
-  // }
-
   void fetchItemsWeWear() async {
     final databaseReference = FirebaseDatabase.instance
         .ref("vendors")
@@ -210,11 +190,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        leading: IconButton(onPressed: (){
-          Navigator.pop(context);
-
-        },icon: Icon(Icons.arrow_back ,color: Colors.white,size: 24,),),
-
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+            size: 24,
+          ),
+        ),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(16),
@@ -222,12 +207,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ),
         backgroundColor: Colors.blue,
-        title: const Text('Vendor Items' ,style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold),),
-
-       centerTitle: true,
+        title: const Text(
+          'Vendor Items',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.shopping_cart ,color: Colors.white,size: 24,),
+            icon: const Icon(
+              Icons.shopping_cart,
+              color: Colors.white,
+              size: 24,
+            ),
             onPressed: () {
               Navigator.push(
                 context,
@@ -239,6 +230,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: Column(
         children: [
+
+          SizedBox(height: 8,),
+
+          const Text(
+            textAlign: TextAlign.center,
+            'If you want order Add item  to cart\n Place an order' ,style: TextStyle(fontWeight: FontWeight.w100 ,),)
+,
           // Filter Chips for categories
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -246,7 +244,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: mainCategories.map((category) {
                 return FilterChip(
-                  label: Text(category ,style: TextStyle( color: Colors.white),),
+                  label: Text(
+                    category,
+                    style: TextStyle(color: Colors.white),
+                  ),
                   selected: selectedCategory == category,
                   onSelected: (selected) {
                     setState(() {
@@ -292,38 +293,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-
-
-
-
-  // Future<void> addToCart({
-  //   required String productName,
-  //   required String productPrice,
-  //   required String vendorName,
-  // }) async {
+  // Future<void> _addToCart(String productName, String productPrice, String shopName ) async {
   //   final prefs = await SharedPreferences.getInstance();
+  //   List<String> cartItems = prefs.getStringList('cart_items') ?? [];
   //
-  //   // Retrieve existing cart items
-  //   List<String>? cartItemsStrings = prefs.getStringList('cartItems');
-  //   List<CartItem> cartItems = cartItemsStrings != null
-  //       ? cartItemsStrings
-  //       .map((itemString) => CartItem.fromMap(jsonDecode(itemString)))
-  //       .toList()
-  //       : [];
+  //   final cartItem = CartItem(
+  //     name: productName,
+  //     price: productPrice,
+  //     vendorName: widget.shopName,
+  //   ).toJson();
   //
-  //   // Add new item to the cart
-  //   CartItem newItem = CartItem(
-  //     vendorName: vendorName, itemName: productName, itemPrice: productPrice,
-  //   );
-  //   cartItems.add(newItem);
+  //   cartItems.add(cartItem);
+  //   await prefs.setStringList('cart_items', cartItems);
   //
-  //   // Save the updated list
-  //   List<String> updatedCartItemsStrings = cartItems
-  //       .map((item) => jsonEncode(item.toMap()))
-  //       .toList();
-  //   await prefs.setStringList('cartItems', updatedCartItemsStrings);
-  //
-  //   // Show confirmation Snackbar
   //   ScaffoldMessenger.of(context).showSnackBar(
   //     SnackBar(
   //       content: Text('$productName added to cart'),
@@ -331,42 +313,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
   //   );
   // }
 
-  Future<void> addToCart({
-    required String productName,
-    required String productPrice,
-    required String vendorName,
-  }) async {
+  Future<void> _addToCart(String productName, String productPrice, String shopName ) async {
     final prefs = await SharedPreferences.getInstance();
+    List<String> cartItems = prefs.getStringList('cart_items') ?? [];
 
-    // Retrieve existing cart items
-    List<String>? cartItemsStrings = prefs.getStringList('cartItems');
-    List<CartItem> cartItems = cartItemsStrings != null
-        ? cartItemsStrings
-        .map((itemString) => CartItem.fromMap(jsonDecode(itemString)))
-        .toList()
-        : [];
-
-    // Add new item to the cart
-    CartItem newItem = CartItem(
+    final cartItem = CartItem(
       name: productName,
       price: productPrice,
-      vendor: widget.shopName,
-    );
-    cartItems.add(newItem);
+      vendorName: widget.shopName,
+    ).toJson();
 
-    // Save the updated list
-    List<String> updatedCartItemsStrings = cartItems
-        .map((item) => jsonEncode(item.toMap()))
-        .toList();
-    await prefs.setStringList('cartItems', updatedCartItemsStrings);
+    cartItems.add(cartItem);
+    try {
+      await prefs.setStringList('cart_items', cartItems);
 
-    // Show confirmation Snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$productName added to cart'),
-      ),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$productName added to cart'),
+        ),
+      );
+    } catch (e) {
+      print('Error adding to cart: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to add $productName to cart'),
+        ),
+      );
+    }
   }
+
 
 
   Widget _buildProductCard(BuildContext context,
@@ -381,6 +356,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
             child: Image.network(
@@ -414,41 +390,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
+
+              SizedBox(width: 4,),
+              Text('Add to cart'),
               IconButton(
                   onPressed: () async {
 
-// Example of adding a product to the cart
-                    addToCart(
-                      productName: productName,
-                      productPrice: productPrice,
-                      vendorName: widget.shopName,
-                    );
+                    await _addToCart(productName ,productPrice, widget.shopName);
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('$productName added to cart'),
-                      ),
-                    );
                   },
                   icon: Icon(Icons.add_shopping_cart)),
 
               SizedBox(
                 width: 32,
               ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PurchaseScreen(
-                        productName: productName,
-                        price: productPrice,
-                      ),
-                    ),
-                  );
-                },
-                child: Text('Order Now'),
-              )
+
+
+              // GestureDetector(
+              //   onTap: () {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //         builder: (context) => PurchaseScreen(
+              //
+              //         ),
+              //       ),
+              //     );
+              //   },
+              //   child: Text('Order Now'),
+              // )
               // Add to Cart Button
               // Buy Now Button
             ],

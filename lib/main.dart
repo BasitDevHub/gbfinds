@@ -1,6 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:gbfinds/screen/Vendor/VendorScreen.dart';
 import 'package:gbfinds/screen/login/login_screen.dart';
 import 'package:get/get.dart';
 

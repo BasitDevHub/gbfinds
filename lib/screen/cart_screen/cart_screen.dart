@@ -1,9 +1,9 @@
 
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/CartItem.dart'; // Import the CartItem model
+import '../models/CartItem.dart';
+import '../order_screen/PurchaseScreen.dart';
 
 class CartScreen extends StatefulWidget {
   @override
@@ -11,61 +11,78 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  late Future<List<CartItem>> _cartItemsFuture;
+  List<CartItem> cartItems = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchCartItems();
-    _cartItemsFuture = _fetchCartItems(); // Fetch cart items on initialization
+    _loadCartItems();
   }
 
-  Future<List<CartItem>> _fetchCartItems() async {
+  Future<void> _loadCartItems() async {
     final prefs = await SharedPreferences.getInstance();
-    List<String>? cartItemsStrings = prefs.getStringList('cartItems');
+    List<String> cartItemsJson = prefs.getStringList('cart_items') ?? [];
 
-    if (cartItemsStrings != null) {
-      return cartItemsStrings
-          .map((itemString) => CartItem.fromMap(jsonDecode(itemString)))
-          .toList();
-    }
-    print('list $cartItemsStrings');
-    return [];
+    setState(() {
+      cartItems = cartItemsJson.map((json) => CartItem.fromJson(json)).toList();
+    });
   }
 
-  Future<void> _removeItem(CartItem item) async {
+  void _navigateToPurchaseScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PurchaseScreen(
+          cartItems: cartItems, // Pass cart items to PurchaseScreen
+        ),
+      ),
+    );
+  }
+
+  Future<void> _removeFromCart(int index) async {
     final prefs = await SharedPreferences.getInstance();
-    List<String>? cartItemsStrings = prefs.getStringList('cartItems');
+    List<String> cartItemsJson = prefs.getStringList('cart_items') ?? [];
 
-    if (cartItemsStrings != null) {
-      List<CartItem> cartItems = cartItemsStrings
-          .map((itemString) => CartItem.fromMap(jsonDecode(itemString)))
-          .toList();
+    cartItemsJson.removeAt(index); // Remove the item at the specified index
+    await prefs.setStringList('cart_items', cartItemsJson);
 
-      cartItems.remove(item); // Remove the item based on overridden equality
+    setState(() {
+      cartItems.removeAt(index); // Update the UI by removing the item from the list
+    });
 
-      // Update SharedPreferences
-      List<String> updatedCartItemsStrings = cartItems
-          .map((item) => jsonEncode(item.toMap()))
-          .toList();
-      await prefs.setStringList('cartItems', updatedCartItemsStrings);
-
-      // Refresh the UI
-      setState(() {
-        _cartItemsFuture = _fetchCartItems();
-      });
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Item removed from cart'),
+      ),
+    );
   }
+
+  double _calculateTotalPrice() {
+    return cartItems.fold(0.0, (total, item) {
+      final price = double.tryParse(item.price) ?? 0.0;
+      return total + price;
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
+    final totalPrice = _calculateTotalPrice();
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        leading: IconButton(onPressed: (){
-          Navigator.pop(context);
-
-        },icon: Icon(Icons.arrow_back ,color: Colors.white,size: 24,),),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+            size: 24,
+          ),
+        ),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(16),
@@ -73,88 +90,116 @@ class _CartScreenState extends State<CartScreen> {
           ),
         ),
         backgroundColor: Colors.blue,
-        title: const Text('Cart' ,style: TextStyle(color: Colors.white ,fontWeight: FontWeight.bold),),
-       centerTitle: true,
+        title: const Text(
+          'Cart',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
-      body: FutureBuilder<List<CartItem>>(
-        future: _cartItemsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No items in cart'));
-          } else {
-            final cartItems = snapshot.data!;
-            return Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: cartItems.length,
-                    itemBuilder: (context, index) {
-                      final item = cartItems[index];
-                      return ListTile(
-                        title: Container(
-
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.2),
-                                spreadRadius: 2,
-                                blurRadius: 5,
-
-                                offset: Offset(0, 3),
+      body: cartItems.isEmpty
+          ? Center(child: Text('No items in cart'))
+          : Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: cartItems.length,
+              itemBuilder: (context, index) {
+                final item = cartItems[index];
+                return Column(
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(top: 5),
+                      child: ListTile(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 2),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: EdgeInsets.all(8.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.2),
+                                      spreadRadius: 5,
+                                      blurRadius: 10,
+                                      offset: Offset(0, 3),
+                                    ),
+                                  ],
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.name,
+                                      style: TextStyle(
+                                        color: Colors.blueGrey,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Rs: ' + item.price,
+                                      style: TextStyle(
+                                        color: Colors.blueGrey,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Vendor: ' + item.vendorName,
+                                      style: TextStyle(
+                                        color: Colors.blueGrey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
-                          ),
-                          padding: EdgeInsets.all(7),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(item.name),
-                              Text('Rs. ${item.price}', textAlign: TextAlign.center),
-                              Text('Vendor: ${item.vendor}'),
-                            ],
-                          ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                _removeFromCart(index); // Handle deletion
+                              },
+                              icon: Icon(Icons.delete),
+                              color: Colors.red,
+                            ),
+                          ],
                         ),
-                        trailing: IconButton(
-                          onPressed: () {
-                            _removeItem(item);
-                          },
-                          icon: Icon(Icons.delete),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                      );
-                    },
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Handle order now action
-                        print('Order Now button pressed');
-                      },
-                      child: Text('Order Now' ,style: TextStyle(color: Colors.white),),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: EdgeInsets.symmetric(vertical: 16.0),
-                        textStyle: TextStyle(fontSize: 15 ,),
                       ),
                     ),
-                  ),
+                  ],
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Total Price: Rs. ${totalPrice.toStringAsFixed(2)}',
+              style: TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.blueGrey,
+              ),
+            ),
+          ),
+          BottomAppBar(
+
+            child: Container(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _navigateToPurchaseScreen,
+                child: Text('Buy Now' ,style: TextStyle(color: Colors.white ,fontWeight: FontWeight.w700), ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+
                 ),
-              ],
-            );
-          }
-        },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
+
+
 }
