@@ -4,8 +4,6 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
-
-
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
 /// Example:
@@ -52,19 +50,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAo3e9lDlQk4VdHKTVzf31XMTOz18xFA5k',
-    appId: '1:380184117975:android:4d535a7a7d8c3063f7a692',
-    messagingSenderId: '380184117975',
-    projectId: 'gbfind-1b948',
-    storageBucket: 'gbfind-1b948.appspot.com',
+    apiKey: 'AIzaSyAP9waVSx_hPGKYfffhL-Bvy4azD8GeX8I',
+    appId: '1:130095153640:android:5b1c338f0740ee8c31645d',
+    messagingSenderId: '130095153640',
+    projectId: 'orderapp-52aed',
+    storageBucket: 'orderapp-52aed.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD6CPF1or1IAAY48nd-hc2I4ARji79RME8',
-    appId: '1:380184117975:ios:9c3c4a88cfa623d4f7a692',
-    messagingSenderId: '380184117975',
-    projectId: 'gbfind-1b948',
-    storageBucket: 'gbfind-1b948.appspot.com',
+    apiKey: 'AIzaSyD1PfI-Uh-GL19lzJ0-hbF5F6hmtC3QS8M',
+    appId: '1:130095153640:ios:de0b2b96b6d4df1131645d',
+    messagingSenderId: '130095153640',
+    projectId: 'orderapp-52aed',
+    storageBucket: 'orderapp-52aed.appspot.com',
     iosBundleId: 'com.example.gbfinds',
   );
 }

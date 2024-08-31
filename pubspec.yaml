@@ -18,13 +18,15 @@ dependencies:
   cupertino_icons: ^1.0.6
   get: ^4.6.5 # Check for the latest version
   firebase_database: ^11.0.4
-  firebase_core: ^3.3.0
+  firebase_core: ^3.4.0
   firebase_messaging: ^15.0.3
   firebase_auth: ^5.1.0
   shared_preferences: ^2.2.3
   image_picker: ^1.1.2
+  flutter_rating_bar: ^4.0.1
 
-
+  smooth_star_rating_null_safety: ^1.0.4+2
+  google_maps_flutter: ^2.9.0
 
 dev_dependencies:
   flutter_test:

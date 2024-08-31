@@ -1,5 +1,6 @@
 
 import 'dart:io'; // Import the dart:io library for File
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/CartItem.dart';
@@ -7,7 +8,7 @@ import '../models/CartItem.dart';
 class PurchaseScreen extends StatefulWidget {
   final List<CartItem> cartItems;
 
-  PurchaseScreen({required this.cartItems});
+  PurchaseScreen({super.key, required this.cartItems});
 
   @override
   _PurchaseScreenState createState() => _PurchaseScreenState();
@@ -17,6 +18,9 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
   XFile? _imageFile;
 
   final ImagePicker _picker = ImagePicker();
+  String _vendorName = '';
+  String _accountNumber = '';
+  final DatabaseReference _databaseReference = FirebaseDatabase.instance.ref('users');
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -92,8 +96,8 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
             const Card(
               elevation: 4,
               child: ListTile(
-                title: Text('Vendor Name: ABC Store'),
-                subtitle: Text('Account Number: 9876543210'),
+                title: Text('Vendor Account: ${''}'),
+                subtitle: Text('Account Number: ${''}'),
                 contentPadding: EdgeInsets.all(16.0),
               ),
             ),
