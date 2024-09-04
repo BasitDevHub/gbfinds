@@ -1,11 +1,19 @@
 
 import 'dart:convert';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/CartItem.dart';
 import '../order_screen/PurchaseScreen.dart';
 
 class CartScreen extends StatefulWidget {
+  const CartScreen({super.key, required this.shopName, required this.vendorId, required this.accountName, required this.accountNumber});
+
+  final String shopName;
+  final String vendorId;
+
+  final String accountName;
+  final String accountNumber;
   @override
   _CartScreenState createState() => _CartScreenState();
 }
@@ -33,7 +41,7 @@ class _CartScreenState extends State<CartScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => PurchaseScreen(
-          cartItems: cartItems, // Pass cart items to PurchaseScreen
+          cartItems: cartItems, shopName: widget.shopName, vendorId: widget.vendorId, accountName: widget.accountName, accountNumber: widget.accountNumber // Pass cart items to PurchaseScreen
         ),
       ),
     );
@@ -201,5 +209,38 @@ class _CartScreenState extends State<CartScreen> {
     );
   }
 
+  void fetchVendorDetails() async {
+    try {
+      final databaseReference = FirebaseDatabase.instance
+          .ref('vendorsDetail')
+          .child(widget.vendorId);
+
+      DataSnapshot dataSnapshot = await databaseReference.get();
+
+      if (dataSnapshot.exists) {
+        final data = dataSnapshot.value as Map<dynamic, dynamic>?;
+
+        if (data != null) {
+          // Extract the relevant vendor details
+          final String ownerName = data['ownerName'] ?? 'N/A';
+          final String ownerContact = data['ownerContact'] ?? 'N/A';
+          final String shopAddress = data['shopAddress'] ?? 'N/A';
+          final String email = data['email'] ?? 'N/A';
+
+          // Display or use the details as needed
+          print('Owner Name: $ownerName');
+          print('Owner Contact: $ownerContact');
+          print('Shop Address: $shopAddress');
+          print('Email: $email');
+        } else {
+          print('No data found for the vendor');
+        }
+      } else {
+        print('Vendor does not exist');
+      }
+    } catch (e) {
+      print('Error fetching vendor details: $e');
+    }
+  }
 
 }

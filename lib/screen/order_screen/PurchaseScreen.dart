@@ -2,13 +2,19 @@
 import 'dart:io'; // Import the dart:io library for File
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:gbfinds/screen/Vendor/VendorScreen.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import '../cart_screen/cart_screen.dart';
 import '../models/CartItem.dart';
 
 class PurchaseScreen extends StatefulWidget {
   final List<CartItem> cartItems;
-
-  PurchaseScreen({super.key, required this.cartItems});
+  final String shopName;
+  final String vendorId;
+  final String accountName;
+  final String accountNumber;
+  PurchaseScreen({super.key, required this.cartItems, required this.shopName, required this.vendorId, required this.accountName, required this.accountNumber});
 
   @override
   _PurchaseScreenState createState() => _PurchaseScreenState();
@@ -60,6 +66,8 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
   Widget build(BuildContext context) {
     final totalPrice = _calculateTotalPrice();
 
+    String ownerEasy;
+    Stream accountno;
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -93,11 +101,11 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            const Card(
+             Card(
               elevation: 4,
               child: ListTile(
-                title: Text('Vendor Account: ${''}'),
-                subtitle: Text('Account Number: ${''}'),
+                title: Text('Vendor Account: ${widget.accountName}'),
+                subtitle: Text('Account Number: ${widget.accountNumber}'),
                 contentPadding: EdgeInsets.all(16.0),
               ),
             ),
@@ -190,7 +198,12 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
             // Place Order Button
             Center(
               child: ElevatedButton(
-                onPressed: _placeOrder,
+                onPressed: (){
+                  _placeOrder();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => VendorScreen()),
+                  );                },
                 child: const Text('Place Order'),
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white, backgroundColor: Colors.blue, // Text color
@@ -204,4 +217,38 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
       ),
     );
   }
+
+  void fetchVendorDetails() async {
+    try {
+      final databaseReference = FirebaseDatabase.instance
+          .ref('vendorsDetail')
+          .child(widget.vendorId);
+
+      DataSnapshot dataSnapshot = await databaseReference.get();
+
+      if (dataSnapshot.exists) {
+        final data = dataSnapshot.value as Map<dynamic, dynamic>?;
+
+        if (data != null) {
+          setState(() {
+            _vendorName = data['ownerAccountName'] ?? '';
+            _accountNumber = data['ownerAccountNo'] ?? '';
+          });
+        } else {
+          print('No data found for the vendor');
+        }
+      } else {
+        print('Vendor does not exist');
+      }
+    } catch (e) {
+      print('Error fetching vendor details: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchVendorDetails();
+  }
+
 }

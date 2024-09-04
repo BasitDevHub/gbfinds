@@ -6,12 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../cart_screen/cart_screen.dart';
 import '../models/CartItem.dart';
 import '../models/Product.dart';
-import '../order_screen/PurchaseScreen.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key, required this.shopName});
+  const DashboardScreen({super.key, required this.shopName, required this.vendorId, required this.accountNo, required this.accountName});
 
   final String shopName;
+  final String accountNo;
+  final String accountName;
+  final String vendorId;
 
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
@@ -183,6 +185,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void initState() {
     super.initState();
     fetchAndHandleItems();
+    print('Dashboard: ${widget.shopName }  and ${widget.vendorId}');
+    print('user account information: ${widget.accountName }  and ${widget.accountNo}');
+
+    fetchVendorDetails();
   }
 
   @override
@@ -222,7 +228,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => CartScreen()),
+                MaterialPageRoute(builder: (context) => CartScreen(shopName: widget.shopName, vendorId: widget.vendorId,  accountName: widget.accountName, accountNumber: widget.accountNo,)),
               );
             },
           ),
@@ -293,25 +299,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Future<void> _addToCart(String productName, String productPrice, String shopName ) async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   List<String> cartItems = prefs.getStringList('cart_items') ?? [];
-  //
-  //   final cartItem = CartItem(
-  //     name: productName,
-  //     price: productPrice,
-  //     vendorName: widget.shopName,
-  //   ).toJson();
-  //
-  //   cartItems.add(cartItem);
-  //   await prefs.setStringList('cart_items', cartItems);
-  //
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //       content: Text('$productName added to cart'),
-  //     ),
-  //   );
-  // }
 
   Future<void> _addToCart(String productName, String productPrice, String shopName ) async {
     final prefs = await SharedPreferences.getInstance();
@@ -428,4 +415,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
+  void fetchVendorDetails() async {
+    try {
+      final databaseReference = FirebaseDatabase.instance
+          .ref('vendorsDetail')
+          .child(widget.vendorId);
+
+      DataSnapshot dataSnapshot = await databaseReference.get();
+
+      if (dataSnapshot.exists) {
+
+        final data = dataSnapshot.value as Map<dynamic, dynamic>?;
+
+        if (data != null) {
+          // Extract the relevant vendor details
+          final String ownerName = data['ownerName'] ?? 'N/A';
+          final String ownerContact = data['ownerContact'] ?? 'N/A';
+          final String shopAddress = data['shopAddress'] ?? 'N/A';
+          final String email = data['email'] ?? 'N/A';
+
+          // Display or use the details as needed
+          print('data from dashboard: $ownerName');
+          print('Owner Name: $ownerName');
+          print('Owner Contact: $ownerContact');
+          print('Shop Address: $shopAddress');
+          print('Email: $email');
+        } else {
+          print('No data found for the vendor');
+        }
+      } else {
+        print('Vendor does not exist');
+      }
+    } catch (e) {
+      print('Error fetching vendor details: $e');
+    }
+  }
+
 }
